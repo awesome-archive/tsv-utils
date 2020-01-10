@@ -14,7 +14,7 @@ There are a couple alternative to uniq'ing the input lines. One is to mark lines
 an equivalence ID, which is a one-upped counter. The other is to number lines, with
 each unique key have its own set of numbers.
 
-Copyright (c) 2015-2019, eBay Software Foundation
+Copyright (c) 2015-2020, eBay Inc.
 Initially written by Jon Degenhardt
 
 License: Boost Licence 1.0 (http://boost.org/LICENSE_1_0.txt)
@@ -220,7 +220,7 @@ struct TsvUniqOptions
                 if (max != 0 || (!equivMode && !numberMode)) max = atLeast;
             }
 
-            if (!keyIsFullLine) fields.each!((ref x) => --x);  // Convert to 1-based indexing.
+            if (!keyIsFullLine) fields.each!((ref x) => --x);  // Convert to 0-based indexing.
 
         }
         catch (Exception exc)
@@ -249,6 +249,13 @@ int main(string[] cmdArgs)
     TsvUniqOptions cmdopt;
     auto r = cmdopt.processArgs(cmdArgs);
     if (!r[0]) return r[1];
+
+    version(LDC_Profile)
+    {
+        import ldc.profile : resetAll;
+        resetAll();
+    }
+
     try tsvUniq(cmdopt, cmdArgs[1..$]);
     catch (Exception exc)
     {
@@ -264,14 +271,15 @@ int main(string[] cmdArgs)
  * The first time a line is seen it is output. If key fields are being used these are
  * used as the basis for the associative array entries rather than the full line.
  */
-void tsvUniq(in TsvUniqOptions cmdopt, in string[] inputFiles)
+void tsvUniq(const TsvUniqOptions cmdopt, const string[] inputFiles)
 {
-    import tsv_utils.common.utils : InputFieldReordering, bufferedByLine, BufferedOutputRange;
+    import tsv_utils.common.utils : InputFieldReordering, bufferedByLine, BufferedOutputRange, joinAppend;
     import std.algorithm : splitter;
-    import std.array : join;
+    import std.array : appender;
     import std.conv : to;
     import std.range;
-    import std.uni : toLower;
+    import std.uni : asLowerCase;
+    import std.utf : byChar;
 
     /* InputFieldReordering maps the key fields from an input line to a separate buffer. */
     auto keyFieldsReordering = cmdopt.keyIsFullLine ? null : new InputFieldReordering!char(cmdopt.fields);
@@ -282,10 +290,14 @@ void tsvUniq(in TsvUniqOptions cmdopt, in string[] inputFiles)
     /* The master hash. The key is the specified fields concatenated together (including
      * separators). The value is a struct with the equiv-id and occurrence count.
      */
-    struct EquivEntry { size_t equivID; size_t count; }
+    static struct EquivEntry { size_t equivID; size_t count; }
     EquivEntry[string] equivHash;
 
-    size_t numFields = cmdopt.fields.length;
+    /* Reusable buffers for multi-field keys and case-insensitive keys. */
+    auto multiFieldKeyBuffer = appender!(char[]);
+    auto lowerKeyBuffer = appender!(char[]);
+
+    const size_t numKeyFields = cmdopt.fields.length;
     long nextEquivID = cmdopt.equivStartID;
     bool headerWritten = false;
     foreach (filename; (inputFiles.length > 0) ? inputFiles : ["-"])
@@ -343,10 +355,25 @@ void tsvUniq(in TsvUniqOptions cmdopt, in string[] inputFiles)
                                    (filename == "-") ? "Standard Input" : filename, lineNum));
                     }
 
-                    key = keyFieldsReordering.outputFields.join(cmdopt.delim);
+                    if (numKeyFields == 1)
+                    {
+                        key = keyFieldsReordering.outputFields[0];
+                    }
+                    else
+                    {
+                        multiFieldKeyBuffer.clear();
+                        keyFieldsReordering.outputFields.joinAppend(multiFieldKeyBuffer, cmdopt.delim);
+                        key = multiFieldKeyBuffer.data;
+                    }
                 }
 
-                if (cmdopt.ignoreCase) key = key.toLower;
+                if (cmdopt.ignoreCase)
+                {
+                    /* Equivalent to key = key.toLower, but without memory allocation. */
+                    lowerKeyBuffer.clear();
+                    lowerKeyBuffer.put(key.asLowerCase.byChar);
+                    key = lowerKeyBuffer.data;
+                }
 
                 bool isOutput = false;
                 EquivEntry currEntry;

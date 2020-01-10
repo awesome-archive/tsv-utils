@@ -3,7 +3,7 @@ Convert CSV formatted data to TSV format.
 
 This program converts comma-separated value data to tab-separated format.
 
-Copyright (c) 2016-2019, eBay Software Foundation
+Copyright (c) 2016-2020, eBay Inc.
 Initially written by Jon Degenhardt
 
 License: Boost Licence 1.0 (http://boost.org/LICENSE_1_0.txt)
@@ -206,12 +206,12 @@ alias NullableSizeT = Nullable!(size_t, size_t.max);
 /** csv2tsvFiles reads multiple files and standard input and writes the results to
  * standard output.
  */
-void csv2tsvFiles(in Csv2tsvOptions cmdopt, in string[] inputFiles)
+void csv2tsvFiles(const ref Csv2tsvOptions cmdopt, const string[] inputFiles)
 {
     import std.algorithm : joiner;
     import tsv_utils.common.utils : BufferedOutputRange;
 
-    ubyte[1024 * 1024] fileRawBuf;
+    ubyte[1024 * 128] fileRawBuf;
     ubyte[] stdinRawBuf = fileRawBuf[0..1024];
     auto stdoutWriter = BufferedOutputRange!(typeof(stdout))(stdout);
     bool firstFile = true;

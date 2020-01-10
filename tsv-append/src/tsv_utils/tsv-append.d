@@ -2,7 +2,7 @@
 Command line tool that appends multiple TSV files. It is header aware and supports
 tracking the original source file of each row.
 
-Copyright (c) 2017-2019, eBay Software Foundation
+Copyright (c) 2017-2020, eBay Inc.
 Initially written by Jon Degenhardt
 
 License: Boost License 1.0 (http://boost.org/LICENSE_1_0.txt)
@@ -110,7 +110,7 @@ struct TsvAppendOptions
     bool versionWanted = false;        // --V|version
 
     /* fileOptionHandler processes the '--f|file source=file' option. */
-    private void fileOptionHandler(string option, string optionVal)
+    private void fileOptionHandler(string option, string optionVal) pure @safe
     {
         import std.algorithm : findSplit;
         import std.format : format;

@@ -4,7 +4,7 @@ A simple version of the unix 'nl' program.
 This program is a simpler version of the unix 'nl' (number lines) program. It reads
 text from files or standard input and adds a line number to each line.
 
-Copyright (c) 2015-2018, eBay Software Foundation
+Copyright (c) 2015-2020, eBay Inc.
 Initially written by Jon Degenhardt
 
 License: Boost Licence 1.0 (http://boost.org/LICENSE_1_0.txt)
@@ -127,7 +127,7 @@ int main(string[] cmdArgs)
  * Reads lines lines from each file, outputing each with a line number prepended. The
  * header from the first file is written, the header from subsequent files is dropped.
  */
-void numberLines(in NumberLinesOptions cmdopt, in string[] inputFiles)
+void numberLines(const NumberLinesOptions cmdopt, const string[] inputFiles)
 {
     import std.conv : to;
     import std.range;

@@ -12,7 +12,7 @@ exception handling, ranges, tuples and strings, templates, universal function ca
 (UFCS), lambdas and functional programming constructs. Comments are more verbose than
 typical to shed light on D programming constructs, but not to the level of a tutorial.
 
-Copyright (c) 2015-2019, eBay Software Foundation
+Copyright (c) 2015-2020, eBay Inc.
 Initially written by Jon Degenhardt
 
 License: Boost Licence 1.0 (http://boost.org/LICENSE_1_0.txt)
@@ -199,7 +199,7 @@ enum CTERestLocation { none, first, last };
  * in a larger program, but is faster. Run-time improvements of 25% were measured compared
  * to the non-templatized version. (Note: 'cte' stands for 'compile time evaluation'.)
  */
-void tsvSelect(CTERestLocation cteRest)(in TsvSelectOptions cmdopt, in string[] inputFiles)
+void tsvSelect(CTERestLocation cteRest)(const TsvSelectOptions cmdopt, const string[] inputFiles)
 {
     import tsv_utils.common.utils: BufferedOutputRange, bufferedByLine, InputFieldReordering, throwIfWindowsNewlineOnUnix;
     import std.algorithm: splitter;

@@ -1,6 +1,6 @@
 # bash completion for eBay's TSV Utility command line tools.
 #
-# Copyright (c) 2017-2019, eBay Software Foundation
+# Copyright (c) 2017-2020, eBay Inc.
 # Initially written by Jon Degenhardt
 #
 # License: Boost Licence 1.0 (http://boost.org/LICENSE_1_0.txt)
@@ -181,7 +181,7 @@ _tsv_sample()
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-    opts="--help --help-verbose --version --header --num --prob --weight-field --key-fields --replace --print-random --gen-random-inorder --compatibility-mode --static-seed --seed-value --delimiter --prefer-skip-sampling --prefer-algorithm-r"
+    opts="--help --help-verbose --version --header --num --prob --weight-field --key-fields --replace --inorder --print-random --gen-random-inorder --compatibility-mode --static-seed --seed-value --delimiter --prefer-skip-sampling --prefer-algorithm-r"
 
     # Options requiring an argument or precluding other options
     case $prev in

@@ -4,7 +4,7 @@ Command line tool that filters TSV files.
 This tool filters tab-delimited files based on numeric or string comparisons
 against specific fields. See the helpText string for details.
 
-Copyright (c) 2015-2019, eBay Software Foundation
+Copyright (c) 2015-2020, eBay Inc.
 Initially written by Jon Degenhardt
 
 License: Boost Licence 1.0 (http://boost.org/LICENSE_1_0.txt)
@@ -785,7 +785,7 @@ struct TsvFilterOptions
 
 /** tsvFilter processes the input files and runs the tests.
  */
-void tsvFilter(in TsvFilterOptions cmdopt, in string[] inputFiles)
+void tsvFilter(const TsvFilterOptions cmdopt, const string[] inputFiles)
 {
     import std.algorithm : all, any, splitter;
     import std.range;

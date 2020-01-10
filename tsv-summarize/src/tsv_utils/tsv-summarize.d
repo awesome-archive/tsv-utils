@@ -2,7 +2,7 @@
 Command line tool that reads TSV files and summarizes field values associated with
 equivalent keys.
 
-Copyright (c) 2016-2019, eBay Software Foundation
+Copyright (c) 2016-2020, eBay Inc.
 Initially written by Jon Degenhardt
 
 License: Boost License 1.0 (http://boost.org/LICENSE_1_0.txt)
@@ -203,8 +203,8 @@ struct TsvSummarizeOptions {
                 "p|float-precision",  "NUM           'Precision' to use printing floating point numbers. Affects the number of digits printed and exponent use. Default: 12", &floatPrecision,
                 "x|exclude-missing",  "              Exclude missing (empty) fields from calculations.", &excludeMissing,
                 "r|replace-missing",  "STR           Replace missing (empty) fields with STR in calculations.", &missingValueReplacement,
-                "count",              "              Count occurrences of each unique key.", &countOptionHandler,
-                "count-header",       "STR           Count occurrences of each unique key, use header STR.", &countHeaderOptionHandler,
+                "count",              "              Count occurrences of each unique key ('--g|group-by'), or the total number of records if no key field is specified.", &countOptionHandler,
+                "count-header",       "STR           Count occurrences of each unique key, like '--count', but use STR as the header.", &countHeaderOptionHandler,
                 "retain",             "<field-list>  Retain one copy of the field.", &operatorOptionHandler!RetainOperator,
                 "first",              "<field-list>[:STR]  First value seen.", &operatorOptionHandler!FirstOperator,
                 "last",               "<field-list>[:STR]  Last value seen.", &operatorOptionHandler!LastOperator,
@@ -435,7 +435,7 @@ struct TsvSummarizeOptions {
 
 /** tsvSummarize does the primary work of the tsv-summarize program.
  */
-void tsvSummarize(TsvSummarizeOptions cmdopt, in string[] inputFiles)
+void tsvSummarize(TsvSummarizeOptions cmdopt, const string[] inputFiles)
 {
     import tsv_utils.common.utils : bufferedByLine, throwIfWindowsNewlineOnUnix;
 
@@ -1672,12 +1672,12 @@ final class MissingFieldPolicy
     private bool _replaceMissing = false;     // True if missing values are replaced.
     private string _missingReplacement;       // Replacement string if replaceMissing is true.
 
-    this (in bool excludeMissing = false, in string missingReplacement = "")
+    this (const bool excludeMissing = false, string missingReplacement = "")
     {
         updatePolicy(excludeMissing, missingReplacement);
     }
 
-    void updatePolicy(in bool excludeMissing, in string missingReplacement)
+    void updatePolicy(const bool excludeMissing, string missingReplacement)
     {
         _missingReplacement = missingReplacement;
         _replaceMissing = missingReplacement.length != 0;

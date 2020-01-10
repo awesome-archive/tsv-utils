@@ -30,7 +30,7 @@ $(LIST
       Windows newlines in input.
 )
 
-Copyright (c) 2015-2019, eBay Software Foundation
+Copyright (c) 2015-2020, eBay Inc.
 Initially written by Jon Degenhardt
 
 License: Boost Licence 1.0 (http://boost.org/LICENSE_1_0.txt)
@@ -181,7 +181,7 @@ if (isSomeChar!C)
 }
 
 /* Tests using different character types. */
-unittest
+@safe unittest
 {
     import std.conv : to;
 
@@ -231,7 +231,7 @@ unittest
 }
 
 /* Test of partial line support. */
-unittest
+@safe unittest
 {
     import std.conv : to;
 
@@ -265,7 +265,7 @@ unittest
 }
 
 /* Field combination tests. */
-unittest
+@safe unittest
 {
     import std.conv : to;
     import std.stdio;
@@ -448,6 +448,7 @@ if (isFileHandle!(Unqual!OutputTarget) || isOutputRange!(Unqual!OutputTarget, ch
          size_t flushSize = defaultFlushSize,
          size_t reserveSize = defaultReserveSize,
          size_t maxSize = defaultMaxSize)
+    @safe
     {
         assert(flushSize <= maxSize);
 
@@ -457,12 +458,12 @@ if (isFileHandle!(Unqual!OutputTarget) || isOutputRange!(Unqual!OutputTarget, ch
         _outputBuffer.reserve(reserveSize);
     }
 
-    ~this()
+    ~this() @safe
     {
         flush();
     }
 
-    void flush()
+    void flush() @safe
     {
         static if (isFileHandle!OutputTarget) _outputTarget.write(_outputBuffer.data);
         else _outputTarget.put(_outputBuffer.data);
@@ -470,7 +471,7 @@ if (isFileHandle!(Unqual!OutputTarget) || isOutputRange!(Unqual!OutputTarget, ch
         _outputBuffer.clear;
     }
 
-    bool flushIfFull()
+    bool flushIfFull() @safe
     {
         bool isFull = _outputBuffer.data.length >= _flushSize;
         if (isFull) flush();
@@ -478,7 +479,7 @@ if (isFileHandle!(Unqual!OutputTarget) || isOutputRange!(Unqual!OutputTarget, ch
     }
 
     /* flushIfMaxSize is a safety check to avoid runaway buffer growth. */
-    void flushIfMaxSize()
+    void flushIfMaxSize() @safe
     {
         if (_outputBuffer.data.length >= _maxSize) flush();
     }
@@ -488,7 +489,7 @@ if (isFileHandle!(Unqual!OutputTarget) || isOutputRange!(Unqual!OutputTarget, ch
      * Flushing occurs if the buffer has a trailing newline and has reached flush size.
      * Flushing also occurs if the buffer has reached max size.
      */
-    private bool maybeFlush()
+    private bool maybeFlush() @safe
     {
         immutable bool doFlush =
             _outputBuffer.data.length >= _flushSize &&
@@ -499,19 +500,19 @@ if (isFileHandle!(Unqual!OutputTarget) || isOutputRange!(Unqual!OutputTarget, ch
     }
 
 
-    private void appendRaw(T)(T stuff)
+    private void appendRaw(T)(T stuff) pure @safe
     {
         import std.range : rangePut = put;
         rangePut(_outputBuffer, stuff);
     }
 
-    void append(T)(T stuff)
+    void append(T)(T stuff) @safe
     {
         appendRaw(stuff);
         maybeFlush();
     }
 
-    bool appendln()
+    bool appendln() @safe
     {
         appendRaw('\n');
         return flushIfFull();
@@ -807,18 +808,18 @@ if (is(Char == char) || is(Char == ubyte))
         private size_t _lineEnd = 0;
         private size_t _dataEnd = 0;
 
-        this (File f)
+        this (File f) @safe
         {
             _file = f;
             _buffer = new ubyte[readSize + growSize];
         }
 
-        bool empty() const
+        bool empty() const pure @safe
         {
             return _file.eof && _lineStart == _dataEnd;
         }
 
-        Char[] front()
+        Char[] front()  pure @safe
         {
             assert(!empty, "Attempt to take the front of an empty bufferedByLine.");
 
@@ -835,7 +836,7 @@ if (is(Char == char) || is(Char == ubyte))
         }
 
         /* Note: Call popFront at initialization to do the initial read. */
-        void popFront()
+        void popFront() @safe
         {
             import std.algorithm: copy, find;
             assert(!empty, "Attempt to popFront an empty bufferedByLine.");
@@ -1030,9 +1031,6 @@ unittest
 joinAppend performs a join operation on an input range, appending the results to
 an output range.
 
-Note: The main uses of joinAppend have been replaced by BufferedOutputRange, which has
-its own joinAppend method.
-
 joinAppend was written as a performance enhancement over using std.algorithm.joiner
 or std.array.join with writeln. Using joiner with writeln is quite slow, 3-4x slower
 than std.array.join with writeln. The joiner performance may be due to interaction
@@ -1045,6 +1043,10 @@ The Appender re-uses the underlying data buffer, saving memory. The example belo
 illustrates. It is a modification of the InputFieldReordering example. The role
 Appender plus joinAppend are playing is to buffer the output. BufferedOutputRange
 uses a similar technique to buffer multiple lines.
+
+Note: The original uses joinAppend have been replaced by BufferedOutputRange, which has
+its own joinAppend method. However, joinAppend remains useful when constructing internal
+buffers where BufferedOutputRange is not appropriate.
 
 ---
 int main(string[] args)
@@ -1163,7 +1165,7 @@ fails. Conversion is done with std.conv.to, it throws a std.conv.ConvException o
 failure. If not enough fields, the exception text is generated referencing 1-upped
 field numbers as would be provided by command line users.
  */
-T getTsvFieldValue(T, C)(const C[] line, size_t fieldIndex, C delim) pure @safe
+T getTsvFieldValue(T, C)(const C[] line, size_t fieldIndex, C delim)
 if (isSomeChar!C)
 {
     import std.algorithm : splitter;
@@ -1211,7 +1213,7 @@ if (isSomeChar!C)
     return val;
 }
 
-unittest
+@safe unittest
 {
     import std.conv : ConvException, to;
     import std.exception;
@@ -1340,13 +1342,13 @@ makeFieldListOptionHandler creates a std.getopt option hander for processing fie
 entered on the command line. A field list is as defined by parseFieldList.
 */
 OptionHandlerDelegate makeFieldListOptionHandler(
-                                                 T,
-                                                 ConvertToZeroBasedIndex convertToZero = No.convertToZeroBasedIndex,
-                                                 AllowFieldNumZero allowZero = No.allowFieldNumZero)
+    T,
+    ConvertToZeroBasedIndex convertToZero = No.convertToZeroBasedIndex,
+    AllowFieldNumZero allowZero = No.allowFieldNumZero)
     (ref T[] fieldsArray)
 if (isIntegral!T && (!allowZero || !convertToZero || !isUnsigned!T))
 {
-    void fieldListOptionHandler(ref T[] fieldArray, string option, string value)
+    void fieldListOptionHandler(ref T[] fieldArray, string option, string value) pure @safe
     {
         import std.algorithm : each;
         try value.parseFieldList!(T, convertToZero, allowZero).each!(x => fieldArray ~= x);
@@ -1537,9 +1539,12 @@ if (isIntegral!T && (!allowZero || !convertToZero || !isUnsigned!T))
 
     struct Result
     {
-        @property bool empty() { return _currFieldParse.empty; }
+        @property bool empty() pure nothrow @safe @nogc
+        {
+            return _currFieldParse.empty;
+        }
 
-        @property T front()
+        @property T front() pure @safe
         {
             import std.conv : to;
 
@@ -1549,7 +1554,7 @@ if (isIntegral!T && (!allowZero || !convertToZero || !isUnsigned!T))
             return _currFieldParse.front.to!T;
         }
 
-        void popFront()
+        void popFront() pure @safe
         {
             assert(!empty, "Attempting to popFront an empty field-list.");
 
@@ -1565,7 +1570,7 @@ if (isIntegral!T && (!allowZero || !convertToZero || !isUnsigned!T))
     return Result();
 }
 
-unittest
+@safe unittest
 {
     import std.algorithm : each, equal;
     import std.exception : assertThrown, assertNotThrown;
@@ -1707,7 +1712,7 @@ if (isIntegral!T && (!allowZero || !convertToZero || !isUnsigned!T))
     return iota(start, last + increment, increment);
 }
 
-unittest // parseFieldRange
+@safe unittest // parseFieldRange
 {
     import std.algorithm : equal;
     import std.exception : assertThrown, assertNotThrown;
@@ -1869,7 +1874,7 @@ void throwIfWindowsNewlineOnUnix
     }
 }
 
-unittest
+@safe unittest
 {
     /* Note: Currently only building on Posix. Need to add non-Posix test cases
      * if Windows builds are ever done.

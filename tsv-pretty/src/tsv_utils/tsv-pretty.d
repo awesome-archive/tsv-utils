@@ -2,7 +2,7 @@
 Command line tool that prints TSV data aligned for easier reading on consoles
 and traditional command-line environments.
 
-Copyright (c) 2017-2019, eBay Software Foundation
+Copyright (c) 2017-2020, eBay Inc.
 Initially written by Jon Degenhardt
 
 License: Boost License 1.0 (http://boost.org/LICENSE_1_0.txt)
@@ -243,7 +243,7 @@ struct TsvPrettyOptions
  * This routine also handles identification of preamble lines. This is mostly for
  * simplification of the TsvPrettyProcessor code.
  */
-void tsvPretty(in ref TsvPrettyOptions options, string[] files)
+void tsvPretty(const ref TsvPrettyOptions options, const string[] files)
 {
     import std.algorithm : canFind;
 
@@ -723,7 +723,7 @@ public:
      */
     size_t writeHeader (Flag!"writeUnderline" writeUnderline = No.writeUnderline,
                         Flag!"fullWidthUnderline" fullWidthUnderline = No.fullWidthUnderline)
-        (OutputRange!char outputStream, in ref TsvPrettyOptions options)
+        (OutputRange!char outputStream, const ref TsvPrettyOptions options)
     {
         import std.range : repeat;
 
@@ -781,7 +781,7 @@ public:
         assert(_type == FieldType.text || _type == FieldType.integer ||
                _type == FieldType.floatingPoint || _type == FieldType.exponent);
     }
-    body
+    do
     {
         import std.algorithm : find, max, min;
         import std.conv : to, ConvException;
@@ -869,7 +869,7 @@ public:
      * This is called during look-ahead caching to register a new sample value for the
      * column. The key components updates are field type and print width.
      */
-    void updateForFieldValue(const char[] fieldValue, in ref TsvPrettyOptions options) @safe
+    void updateForFieldValue(const char[] fieldValue, const ref TsvPrettyOptions options) @safe
     {
         import std.algorithm : findAmong, findSplit, max, min;
         import std.conv : to, ConvException;
@@ -991,7 +991,7 @@ public:
      * called after adding field entries via updateForFieldValue(). It returns its new
      * end position.
      */
-    size_t finalizeFormatting (size_t startPosition, in ref TsvPrettyOptions options) @safe pure @nogc nothrow
+    size_t finalizeFormatting (size_t startPosition, const ref TsvPrettyOptions options) @safe pure @nogc nothrow
     {
         import std.algorithm : max, min;
         _startPosition = startPosition;

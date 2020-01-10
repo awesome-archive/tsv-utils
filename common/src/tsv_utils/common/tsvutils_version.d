@@ -3,17 +3,17 @@
 
 module tsv_utils.common.tsvutils_version;
 
-enum string tsvutilsVersion = "v1.4.3";
+enum string tsvutilsVersion = "v1.4.4";
 
-string tsvutilsVersionNotice (string toolName)
+string tsvutilsVersionNotice (string toolName) @safe pure nothrow
 {
     return toolName ~ " (eBay/tsv-utils) " ~ tsvutilsVersion ~ "\n" ~ q"EOS
-Copyright (c) 2015-2019, eBay Software Foundation
+Copyright (c) 2015-2020, eBay Inc.
 https://github.com/eBay/tsv-utils
 EOS";
 }
 
-unittest
+@safe unittest
 {
     string programName = "program.name";
     assert(tsvutilsVersionNotice(programName).length > programName.length);

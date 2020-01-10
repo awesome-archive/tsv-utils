@@ -11,7 +11,7 @@ $(LIST
     * [quantile] - Generates quantile values for a data set.
 )
 
-Copyright (c) 2016-2019, eBay Software Foundation
+Copyright (c) 2016-2020, eBay Inc.
 Initially written by Jon Degenhardt
 
 License: Boost Licence 1.0 (http://boost.org/LICENSE_1_0.txt)
@@ -505,7 +505,7 @@ if (isRandomAccessRange!Range && hasLength!Range && hasSlicing!Range)
 }
 
 /* rangeMedian unit tests. */
-unittest
+@safe unittest
 {
     import std.math : isNaN;
     import std.algorithm : all, permutations;
@@ -592,7 +592,7 @@ in
     assert(method >= QuantileInterpolation.min && method <= QuantileInterpolation.max);
     assert(data.isSorted);
 }
-body
+do
 {
     import core.stdc.math : modf;
     import std.algorithm : max, min;
